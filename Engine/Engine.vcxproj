@@ -20,13 +20,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -62,7 +62,7 @@
       <PreprocessorDefinitions>BRQ_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\SPIR-V-Reflect\include;$(ProjectDir)ThirdParty\STBI\include\;$(ProjectDir)ThirdParty\GLFW\include\;$(ProjectDir)ThirdParty\GLM\include\;$(ProjectDir)ThirdParty\VulkanMemoryAllocator\include\;$(ProjectDir)ThirdParty\meshoptimizer\include\;$(VULKAN_SDK)\include\;Src\BRQ\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\SPIR-V-Reflect\include;$(ProjectDir)ThirdParty\STBI\include\;$(ProjectDir)ThirdParty\GLFW\include\;$(ProjectDir)ThirdParty\GLM\include\;$(ProjectDir)ThirdParty\VulkanMemoryAllocator\include\;$(ProjectDir)ThirdParty\meshoptimizer\include\;$(VULKAN_SDK)\Include\;Src\BRQ\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>BRQ.h</PrecompiledHeaderFile>
@@ -87,7 +87,7 @@
       <PreprocessorDefinitions>BRQ_RELEASE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\SPIR-V-Reflect\include;$(ProjectDir)ThirdParty\STBI\include\;$(ProjectDir)ThirdParty\GLFW\include\;$(ProjectDir)ThirdParty\GLM\include\;$(ProjectDir)ThirdParty\VulkanMemoryAllocator\include\;$(ProjectDir)ThirdParty\meshoptimizer\include\;$(VULKAN_SDK)\include\;Src\BRQ\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\SPIR-V-Reflect\include;$(ProjectDir)ThirdParty\STBI\include\;$(ProjectDir)ThirdParty\GLFW\include\;$(ProjectDir)ThirdParty\GLM\include\;$(ProjectDir)ThirdParty\VulkanMemoryAllocator\include\;$(ProjectDir)ThirdParty\meshoptimizer\include\;$(VULKAN_SDK)\Include\;Src\BRQ\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <StringPooling>true</StringPooling>
       <PrecompiledHeader>Use</PrecompiledHeader>
