@@ -78,7 +78,7 @@ namespace BRQ {
 
         for (U64 i = 0; i < m_DescriptorSetLayouts.size(); i++) {
 
-            VK::DestoryDescriptorSetLayout(context->GetDevice(), m_DescriptorSetLayouts[i]);
+            VK::DestroyDescriptorSetLayout(context->GetDevice(), m_DescriptorSetLayouts[i]);
         }
 
         VK::DestroyPipelineLayout(context->GetDevice(), m_Layout);

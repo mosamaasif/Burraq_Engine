@@ -10,7 +10,6 @@ namespace BRQ {
 
         F32 x, y, z;
         F32 u, v;
-        //F32 nx, ny, nz;
     };
 
     struct MeshData {

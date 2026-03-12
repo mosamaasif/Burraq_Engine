@@ -159,7 +159,7 @@ namespace BRQ {
         VK::QueueWaitIdle(context->GetGraphicsQueue());
 
         VK::DestroyCommandPool(context->GetDevice(), pool);
-        VK::DestoryBuffer(buffer);
+        VK::DestroyBuffer(buffer);
 
         for (U32 i = 0; i < imageData.size(); i++) {
 

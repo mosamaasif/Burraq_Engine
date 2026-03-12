@@ -148,7 +148,7 @@ namespace BRQ {
 
     void Mesh::DestroyMesh() {
 
-        VK::DestoryBuffer(VertexBuffer);
-        VK::DestoryBuffer(IndexBuffer);
+        VK::DestroyBuffer(VertexBuffer);
+        VK::DestroyBuffer(IndexBuffer);
     }
 }

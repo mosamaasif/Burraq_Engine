@@ -6,6 +6,8 @@
 #include "TextureCube.h"
 #include "Platform/Vulkan/RenderContext.h"
 #include "GraphicsPipeline.h"
+#include "Mesh.h"
+#include "Skybox.h"
 
 namespace BRQ {
 
@@ -36,7 +38,10 @@ namespace BRQ {
         TextureCube*                                                m_TextureCube;
 
         GraphicsPipeline                                            m_Pipeline;
-        GraphicsPipeline                                            m_Skybox;
+        GraphicsPipeline                                            m_SkyboxPipeline;
+
+        Mesh                                                        m_MeshData;
+        Skybox                                                      m_SkyboxData;
 
         PerFrame                                                    m_PerFrameData[FRAME_LAG];
         std::vector<VkFramebuffer>                                  m_Framebuffers;
@@ -55,8 +60,6 @@ namespace BRQ {
 
         void BeginScene(const Camera& camera);
         void EndScene();
-
-        //void Submit();
 
         void Present();
 
@@ -78,15 +81,14 @@ namespace BRQ {
         void CreateCommands();
         void DestroyCommands();
 
-        void CreateSyncronizationPrimitives();
-        void DestroySyncronizationPrimitives();
+        void CreateSynchronizationPrimitives();
+        void DestroySynchronizationPrimitives();
 
         void CreateDescriptorPool();
         void DestroyDescriptorPool();
 
         void CreateDescriptorSets();
 
-        // this is temp
         void CreateTexture();
         void DestroyTexture();
 

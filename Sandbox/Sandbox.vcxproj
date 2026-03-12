@@ -22,9 +22,9 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{65ddc921-e6e5-44b5-8558-f61d73b0b9cd}</ProjectGuid>
-    <RootNamespace>Minecraft</RootNamespace>
+    <RootNamespace>Sandbox</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Minecraft</ProjectName>
+    <ProjectName>Sandbox</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -183,13 +183,7 @@ exit</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Minecraft.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Src\World\Blocks\Block.h" />
-    <ClInclude Include="Src\World\Blocks\BlockData.h" />
-    <ClInclude Include="Src\World\Chunks\Chunk.h" />
-    <ClInclude Include="Src\World\WorldConfig.h" />
+    <ClCompile Include="Src\Sandbox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\shader.frag" />

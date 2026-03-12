@@ -141,7 +141,7 @@ namespace BRQ {
         VK::QueueWaitIdle(context->GetGraphicsQueue());
 
         VK::DestroyCommandPool(context->GetDevice(), pool);
-        VK::DestoryBuffer(buffer);
+        VK::DestroyBuffer(buffer);
 
 
         VK::ImageViewCreateInfo viewInfo = {};

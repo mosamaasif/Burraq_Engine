@@ -443,15 +443,15 @@ namespace BRQ { namespace VK {
     void CommandBufferEnd(const VkCommandBuffer& buffer);
 
     Buffer CreateBuffer(const BufferCreateInfo& info = {});
-    void DestoryBuffer(Buffer& buffer);
+    void DestroyBuffer(Buffer& buffer);
 
     void UploadBuffer(const VkDevice& device, const UploadBufferInfo& info = {});
 
     VkDescriptorSetLayout CreateDescriptorSetLayout(const VkDevice& device, const DescriptorSetLayoutCreateInfo& info = {});
-    void DestoryDescriptorSetLayout(const VkDevice& device, VkDescriptorSetLayout& layout);
+    void DestroyDescriptorSetLayout(const VkDevice& device, VkDescriptorSetLayout& layout);
 
     VkDescriptorPool CreateDescriptorPool(const VkDevice& device, const DescriptorPoolCreateInfo& info = {});
-    void DestoryDescriptorPool(const VkDevice& device, VkDescriptorPool& pool);
+    void DestroyDescriptorPool(const VkDevice& device, VkDescriptorPool& pool);
 
     // TODO change this for dynamic descriptor sets
     std::vector<VkDescriptorSet> AllocateDescriptorSets(const VkDevice& device, const DescriptorSetAllocateInfo& info = {});

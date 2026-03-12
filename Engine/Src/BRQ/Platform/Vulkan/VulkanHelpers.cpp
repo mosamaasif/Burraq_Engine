@@ -979,7 +979,7 @@ namespace BRQ { namespace VK {
         return result;
     }
 
-    void DestoryBuffer(Buffer& buffer) {
+    void DestroyBuffer(Buffer& buffer) {
 
         auto vma = VulkanMemoryAllocator::GetInstance();
 
@@ -1061,7 +1061,7 @@ namespace BRQ { namespace VK {
         return layout;
     }
 
-    void DestoryDescriptorSetLayout(const VkDevice& device, VkDescriptorSetLayout& layout) {
+    void DestroyDescriptorSetLayout(const VkDevice& device, VkDescriptorSetLayout& layout) {
 
         vkDestroyDescriptorSetLayout(device, layout, nullptr);
         layout = VK_NULL_HANDLE;
@@ -1083,7 +1083,7 @@ namespace BRQ { namespace VK {
         return pool;
     }
 
-    void DestoryDescriptorPool(const VkDevice& device, VkDescriptorPool& pool) {
+    void DestroyDescriptorPool(const VkDevice& device, VkDescriptorPool& pool) {
 
         vkDestroyDescriptorPool(device, pool, nullptr);
         pool = VK_NULL_HANDLE;

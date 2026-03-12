@@ -16,10 +16,6 @@
 
 namespace BRQ {
 
-    // this shouldnt be here
-    Mesh mesh;
-    Skybox skybox;
-
     Renderer* Renderer::s_Renderer = nullptr;
 
     Renderer::Renderer()
@@ -82,7 +78,6 @@ namespace BRQ {
 
         VK::CommandBeginRenderPass(info);
 
-        // TEMP
         VkExtent2D extent = m_RenderContext->GetSwapchainExtent2D();
         VkViewport viewport = {};
         viewport.x = 0.0f;
@@ -102,33 +97,33 @@ namespace BRQ {
         m_Pipeline.Bind(buffer);
 
         VkDeviceSize offset = 0;
-        vkCmdBindVertexBuffers(buffer, 0, 1, &mesh.VertexBuffer.Buffer, &offset);
-        vkCmdBindIndexBuffer(buffer, mesh.IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindVertexBuffers(buffer, 0, 1, &m_MeshData.VertexBuffer.Buffer, &offset);
+        vkCmdBindIndexBuffer(buffer, m_MeshData.IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 
         glm::mat4 pv = camera.GetProjectionMatrix() * camera.GetViewMatrix();
 
         m_Pipeline.PushConstantData(buffer, PipelineStage::Vertex, &pv[0], sizeof(glm::mat4), 0);
         m_Pipeline.BindDescriptorSets(buffer, m_PerFrameData[index].DescriptorSets.data(), (U32)m_PerFrameData[index].DescriptorSets.size());
 
-        vkCmdDrawIndexed(buffer, (U32)mesh.IndexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(buffer, (U32)m_MeshData.IndexCount, 1, 0, 0, 0);
 
         // ------------------------------------------------------
 
-        m_Skybox.Bind(buffer);
+        m_SkyboxPipeline.Bind(buffer);
         offset = 0;
 
-        auto vBuffer = skybox.GetVertexBuffer().Buffer;
-        auto iBuffer = skybox.GetIndexBuffer().Buffer;
+        auto vBuffer = m_SkyboxData.GetVertexBuffer().Buffer;
+        auto iBuffer = m_SkyboxData.GetIndexBuffer().Buffer;
 
         vkCmdBindVertexBuffers(buffer, 0, 1, &vBuffer, &offset);
         vkCmdBindIndexBuffer(buffer, iBuffer, 0, VK_INDEX_TYPE_UINT32);
 
         glm::mat4 cam = camera.GetProjectionMatrix() * glm::mat4(glm::mat3(camera.GetViewMatrix()));
 
-        m_Skybox.PushConstantData(buffer, PipelineStage::Vertex, &cam[0], sizeof(glm::mat4), 0);
-        m_Skybox.BindDescriptorSets(buffer, m_PerFrameData[index].SkyboxDescriptorSets.data(), (U32)m_PerFrameData[index].SkyboxDescriptorSets.size());
+        m_SkyboxPipeline.PushConstantData(buffer, PipelineStage::Vertex, &cam[0], sizeof(glm::mat4), 0);
+        m_SkyboxPipeline.BindDescriptorSets(buffer, m_PerFrameData[index].SkyboxDescriptorSets.data(), (U32)m_PerFrameData[index].SkyboxDescriptorSets.size());
 
-        vkCmdDrawIndexed(buffer, skybox.GetIndexCount(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(buffer, m_SkyboxData.GetIndexCount(), 1, 0, 0, 0);
     }
 
     void Renderer::EndScene() {
@@ -193,23 +188,21 @@ namespace BRQ {
         CreateDescriptorPool();
         CreateDescriptorSets();
         CreateCommands();
-        CreateSyncronizationPrimitives();
+        CreateSynchronizationPrimitives();
 
-        //mesh.LoadMesh("Models/monkey_flat.obj");
-        mesh.LoadMesh("Resources/Models/Lion.obj");
-        //mesh.LoadMesh("Resources/Models/crate.obj");
+        m_MeshData.LoadMesh("Resources/Models/Lion.obj");
 
-        skybox.Load();
+        m_SkyboxData.Load();
     }
 
     void Renderer::DestroyInternal() {
 
         vkDeviceWaitIdle(m_RenderContext->GetDevice());
 
-        mesh.DestroyMesh();
-        skybox.DestroyMesh();
+        m_MeshData.DestroyMesh();
+        m_SkyboxData.DestroyMesh();
 
-        DestroySyncronizationPrimitives();
+        DestroySynchronizationPrimitives();
         DestroyCommands();
         DestroyGraphicsPipeline();
         DestroySkyboxPipeline();
@@ -290,12 +283,12 @@ namespace BRQ {
         info.Flags = (GraphicsPipelineFlags)(DepthTestEnabled | DepthCompareLess | DepthCompareEqual | CullModeFrontFace | EnableCulling);
         info.Shaders = { { "Resources/Shaders/skyboxShader.vert.spv" }, { "Resources/Shaders/skyboxShader.frag.spv" } };
 
-        m_Skybox.Init(info);
+        m_SkyboxPipeline.Init(info);
     }
 
     void Renderer::DestroySkyboxPipeline() {
 
-        m_Skybox.Destroy();
+        m_SkyboxPipeline.Destroy();
     }
 
     void Renderer::CreateCommands() {
@@ -313,7 +306,6 @@ namespace BRQ {
             allocateInfo.Level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             allocateInfo.CommandBufferCount = 1;
 
-            // CHANGE THIS
             auto buffer = VK::AllocateCommandBuffers(m_RenderContext->GetDevice(), allocateInfo);
             m_PerFrameData[i].CommandBuffer = buffer[0];
         }
@@ -330,7 +322,7 @@ namespace BRQ {
         }
     }
 
-    void Renderer::CreateSyncronizationPrimitives() {
+    void Renderer::CreateSynchronizationPrimitives() {
 
         for (U64 i = 0; i < FRAME_LAG; i++) {
 
@@ -340,7 +332,7 @@ namespace BRQ {
         }
     }
 
-    void Renderer::DestroySyncronizationPrimitives() {
+    void Renderer::DestroySynchronizationPrimitives() {
 
         for (U64 i = 0; i < FRAME_LAG; i++) {
 
@@ -372,15 +364,15 @@ namespace BRQ {
 
         for (U64 i = 0; i < FRAME_LAG; i++) {
 
-            VK::DestoryDescriptorPool(m_RenderContext->GetDevice(), m_PerFrameData[i].DescriptorPool);
-            VK::DestoryDescriptorPool(m_RenderContext->GetDevice(), m_PerFrameData[i].SkyboxDescriptorPool);
+            VK::DestroyDescriptorPool(m_RenderContext->GetDevice(), m_PerFrameData[i].DescriptorPool);
+            VK::DestroyDescriptorPool(m_RenderContext->GetDevice(), m_PerFrameData[i].SkyboxDescriptorPool);
         }
     }
 
     void Renderer::CreateDescriptorSets() {
 
         std::vector<VkDescriptorSetLayout> layouts = m_Pipeline.GetDescriptorSetLayouts();
-        std::vector<VkDescriptorSetLayout> skyboxLayouts =  m_Skybox.GetDescriptorSetLayouts();
+        std::vector<VkDescriptorSetLayout> skyboxLayouts =  m_SkyboxPipeline.GetDescriptorSetLayouts();
 
         for (U64 i = 0; i < FRAME_LAG; i++) {
 
@@ -398,14 +390,14 @@ namespace BRQ {
             m_PerFrameData[i].SkyboxDescriptorSets = std::move(VK::AllocateDescriptorSets(m_RenderContext->GetDevice(), info));
 
             for (U64 j = 0; j < m_PerFrameData[i].DescriptorSets.size(); j++) {
-        
+
                 VkDescriptorImageInfo imageInfo = {};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 imageInfo.imageView = m_Texture2D->GetImageView();
                 imageInfo.sampler = m_Texture2D->GetSampler();
-        
+
                 VkWriteDescriptorSet descriptorWrites = {};
-        
+
                 descriptorWrites.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrites.dstSet = m_PerFrameData[i].DescriptorSets[j];
                 descriptorWrites.dstBinding = 0;
@@ -413,28 +405,28 @@ namespace BRQ {
                 descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 descriptorWrites.descriptorCount = 1;
                 descriptorWrites.pImageInfo = &imageInfo;
-        
+
                 vkUpdateDescriptorSets(m_RenderContext->GetDevice(), 1, &descriptorWrites, 0, nullptr);
+            }
 
-                for (size_t j = 0; j < m_PerFrameData[i].SkyboxDescriptorSets.size(); j++) {
+            for (size_t k = 0; k < m_PerFrameData[i].SkyboxDescriptorSets.size(); k++) {
 
-                    VkDescriptorImageInfo imageInfo = {};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    imageInfo.imageView = m_TextureCube->GetImageView();
-                    imageInfo.sampler = m_TextureCube->GetSampler();
+                VkDescriptorImageInfo imageInfo = {};
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfo.imageView = m_TextureCube->GetImageView();
+                imageInfo.sampler = m_TextureCube->GetSampler();
 
-                    VkWriteDescriptorSet descriptorWrites = {};
+                VkWriteDescriptorSet descriptorWrites = {};
 
-                    descriptorWrites.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites.dstSet = m_PerFrameData[i].SkyboxDescriptorSets[j];
-                    descriptorWrites.dstBinding = 0;
-                    descriptorWrites.dstArrayElement = 0;
-                    descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites.descriptorCount = 1;
-                    descriptorWrites.pImageInfo = &imageInfo;
+                descriptorWrites.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites.dstSet = m_PerFrameData[i].SkyboxDescriptorSets[k];
+                descriptorWrites.dstBinding = 0;
+                descriptorWrites.dstArrayElement = 0;
+                descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrites.descriptorCount = 1;
+                descriptorWrites.pImageInfo = &imageInfo;
 
-                    vkUpdateDescriptorSets(m_RenderContext->GetDevice(), 1, &descriptorWrites, 0, nullptr);
-                }
+                vkUpdateDescriptorSets(m_RenderContext->GetDevice(), 1, &descriptorWrites, 0, nullptr);
             }
         }
     }

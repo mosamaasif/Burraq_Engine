@@ -33,8 +33,8 @@ namespace BRQ {
         virtual ~Application();
 
         void Run();
-        void OnUpdate(F32 dt);
-        void OnEvent(Event& event);
+        virtual void OnUpdate(F32 dt);
+        virtual void OnEvent(Event& event);
 
         Application* GetApplication() { return s_Application; }
 

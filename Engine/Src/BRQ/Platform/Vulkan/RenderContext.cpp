@@ -12,7 +12,7 @@ namespace BRQ {
     RenderContext::RenderContext() {
     
         m_CurrentIndex = 0;
-        m_AcquiredImageIndex = 0;;
+        m_AcquiredImageIndex = 0;
         m_DepthImage = {};
         m_DepthImageView = {};
         m_RenderPass = VK_NULL_HANDLE;
