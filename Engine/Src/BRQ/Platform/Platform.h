@@ -1,11 +1,17 @@
 #pragma once
 
-#ifdef _WIN64
-    #define BRQ_PLATFORM_WINDOWS
+#if defined(_WIN64)
+    #ifndef BRQ_PLATFORM_WINDOWS
+        #define BRQ_PLATFORM_WINDOWS
+    #endif
 #elif defined(_WIN32)
     #error "Burraq Engine only supports 64-bit Windows!"
+#elif defined(__APPLE__)
+    #define BRQ_PLATFORM_MACOS
+#elif defined(__linux__)
+    #define BRQ_PLATFORM_LINUX
 #else
-    #error "Burraq Engine only supports Windows!"
+    #error "Unsupported platform!"
 #endif
 
 

@@ -1,11 +1,15 @@
 #pragma once
 
-#ifdef NOMINMAX
-    #include <Windows.h>
-#else
-    #define NOMINMAX
-    #include <Windows.h>
-    #undef NOMINMAX
+#include "Platform/Platform.h"
+
+#ifdef BRQ_PLATFORM_WINDOWS
+    #ifdef NOMINMAX
+        #include <Windows.h>
+    #else
+        #define NOMINMAX
+        #include <Windows.h>
+        #undef NOMINMAX
+    #endif
 #endif
 
 #include <set>
@@ -19,8 +23,6 @@
 #include <algorithm>
 #include <functional>
 #include <string_view>
-
-#include "Platform/Platform.h"
 
 #include "Core/Base.h"
 

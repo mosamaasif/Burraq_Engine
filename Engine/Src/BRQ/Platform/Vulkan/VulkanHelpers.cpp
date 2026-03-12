@@ -37,8 +37,11 @@ namespace BRQ { namespace VK {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-        extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-        extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+        U32 glfwExtensionCount = 0;
+        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        for (U32 i = 0; i < glfwExtensionCount; i++) {
+            extensions.push_back(glfwExtensions[i]);
+        }
 
         createInfo.ppEnabledLayerNames = layers.data();
         createInfo.enabledLayerCount = (U32)layers.size();
@@ -74,12 +77,7 @@ namespace BRQ { namespace VK {
 
         VkSurfaceKHR surface = VK_NULL_HANDLE;
 
-        VkWin32SurfaceCreateInfoKHR createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-        createInfo.hwnd = info.WindowHandle;
-        createInfo.hinstance = info.InstanceHandle;
-
-        VK_CHECK(vkCreateWin32SurfaceKHR(instance, &createInfo, nullptr, &surface));
+        VK_CHECK(glfwCreateWindowSurface(instance, info.Window, nullptr, &surface));
 
         return surface;
     }

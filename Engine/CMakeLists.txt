@@ -46,7 +46,8 @@ set_target_properties(meshoptimizer PROPERTIES
 target_link_libraries(BurraqEngine PRIVATE meshoptimizer)
 
 target_compile_definitions(BurraqEngine PUBLIC
-    NOMINMAX
+    $<$<PLATFORM_ID:Windows>:NOMINMAX>
+    $<$<PLATFORM_ID:Windows>:BRQ_PLATFORM_WINDOWS>
     $<$<CONFIG:Debug>:BRQ_DEBUG>
     $<$<CONFIG:Debug>:DEBUG>
     $<$<CONFIG:Release>:BRQ_RELEASE>

@@ -20,12 +20,10 @@ namespace BRQ {
     class Window  {
 
     public:
-        typedef void* WindowHandle;
         using EventCallbackFunction = std::function<void(Event&)>;
 
     private:
         WindowProperties      m_Properties;
-        WindowHandle          m_WindowHandle;
         GLFWwindow*           m_Window;
         EventCallbackFunction m_EventCallback;
         bool                  m_Open;
@@ -42,7 +40,7 @@ namespace BRQ {
 
         const std::string& GetWindowTitle() const { return m_Properties.Title; }
 
-        WindowHandle GetNativeWindowHandle() const { return m_WindowHandle; };
+        GLFWwindow* GetGLFWWindow() const { return m_Window; }
 
         void SetEventCallbackFunction(const EventCallbackFunction& function) { m_EventCallback = function; }
         bool IsOpen() const { return m_Open; };

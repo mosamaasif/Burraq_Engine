@@ -5,14 +5,12 @@
 
 #include "Events/WindowEvents.h"
 
-#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 
 namespace BRQ {
 
     Window::Window(const WindowProperties& properties)
-        : m_Properties(properties), m_WindowHandle(nullptr) {
+        : m_Properties(properties) {
 
         m_Open = Init();
     }
@@ -51,8 +49,6 @@ namespace BRQ {
 
         glfwShowWindow(m_Window);
         glfwSetWindowUserPointer(m_Window, this);
-
-        m_WindowHandle = glfwGetWin32Window(m_Window);
 
         glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, I32 width, I32 height) {
 

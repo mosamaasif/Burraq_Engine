@@ -60,8 +60,7 @@ namespace BRQ {
     void VulkanDevice::CreateSurface() {
 
         VK::SurfaceCreateInfo info = {};
-        info.InstanceHandle = GetModuleHandle(nullptr);
-        info.WindowHandle = (HWND)m_Window->GetNativeWindowHandle();
+        info.Window = m_Window->GetGLFWWindow();
 
         m_Surface = VK::CreateSurface(m_Instance, info);
     }

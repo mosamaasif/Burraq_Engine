@@ -5,7 +5,7 @@
 #include "Logger/Log.h"
 
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_win32.h>
+#include <GLFW/glfw3.h>
 
 #include "VulkanCommon.h"
 
@@ -72,8 +72,7 @@ namespace BRQ { namespace VK {
 
     BRQ_ALIGN(16) struct SurfaceCreateInfo {
 
-        HWND      WindowHandle = nullptr;
-        HINSTANCE InstanceHandle = nullptr;
+        GLFWwindow* Window = nullptr;
     };
 
     BRQ_ALIGN(16) struct DeviceCreateInfo {
