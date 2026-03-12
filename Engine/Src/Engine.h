@@ -15,6 +15,12 @@
 #include "BRQ/Application/Keys.h"
 
 #include "BRQ/Graphics/Renderer.h"
+#include "BRQ/Graphics/RenderCommand.h"
+#include "BRQ/Graphics/GraphicsPipeline.h"
 #include "BRQ/Graphics/Mesh.h"
+#include "BRQ/Graphics/Skybox.h"
+#include "BRQ/Graphics/Texture2D.h"
+#include "BRQ/Graphics/TextureCube.h"
+#include "BRQ/Graphics/BufferLayout.h"
 
 #include "BRQ/Application/EntryPoint.h"

@@ -739,7 +739,7 @@ namespace BRQ { namespace VK {
 
         VkPipeline pipeline = VK_NULL_HANDLE;
 
-        VK_CHECK(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline));
+        VK_CHECK(vkCreateGraphicsPipelines(device, info.PipelineCache, 1, &createInfo, nullptr, &pipeline));
 
         return pipeline;
     }
@@ -774,9 +774,9 @@ namespace BRQ { namespace VK {
             createInfos[i] = createInfo;
         }
 
-        // TODO: PipelineCache, its crucial for performance!
+        VkPipelineCache cache = infos.empty() ? VK_NULL_HANDLE : infos[0].PipelineCache;
 
-        VK_CHECK(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, (U32)createInfos.size(), createInfos.data(), nullptr, results.data()));
+        VK_CHECK(vkCreateGraphicsPipelines(device, cache, (U32)createInfos.size(), createInfos.data(), nullptr, results.data()));
 
         return std::move(results);
     }

@@ -5,13 +5,8 @@
 #include "Application/Window.h"
 #include "Utilities/VulkanMemoryAllocator.h"
 
-#include "Graphics/Mesh.h"
-
 #include "Platform/Vulkan/RenderContext.h"
 #include "Platform/Vulkan/VulkanCommands.h"
-
-#include "Math/Math.h"
-#include "Skybox.h"
 
 
 namespace BRQ {
@@ -93,37 +88,30 @@ namespace BRQ {
 
         vkCmdSetViewport(buffer, 0, 1, &viewport);
         vkCmdSetScissor(buffer, 0, 1, &scissor);
+    }
 
-        m_Pipeline.Bind(buffer);
+    void Renderer::Submit(const RenderCommand& command) {
+
+        U32 index = m_RenderContext->GetCurrentIndex();
+        VkCommandBuffer buffer = m_PerFrameData[index].CommandBuffer;
+
+        command.Pipeline->Bind(buffer);
 
         VkDeviceSize offset = 0;
-        vkCmdBindVertexBuffers(buffer, 0, 1, &m_MeshData.VertexBuffer.Buffer, &offset);
-        vkCmdBindIndexBuffer(buffer, m_MeshData.IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindVertexBuffers(buffer, 0, 1, &command.Mesh->VertexBuffer.Buffer, &offset);
+        vkCmdBindIndexBuffer(buffer, command.Mesh->IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 
-        glm::mat4 pv = camera.GetProjectionMatrix() * camera.GetViewMatrix();
+        if (command.PushConstantData && command.PushConstantSize > 0) {
 
-        m_Pipeline.PushConstantData(buffer, PipelineStage::Vertex, &pv[0], sizeof(glm::mat4), 0);
-        m_Pipeline.BindDescriptorSets(buffer, m_PerFrameData[index].DescriptorSets.data(), (U32)m_PerFrameData[index].DescriptorSets.size());
+            command.Pipeline->PushConstantData(buffer, command.PushConstantStage, command.PushConstantData, command.PushConstantSize, command.PushConstantOffset);
+        }
 
-        vkCmdDrawIndexed(buffer, (U32)m_MeshData.IndexCount, 1, 0, 0, 0);
+        if (command.DescriptorSets && command.DescriptorSetCount > 0) {
 
-        // ------------------------------------------------------
+            command.Pipeline->BindDescriptorSets(buffer, command.DescriptorSets, command.DescriptorSetCount);
+        }
 
-        m_SkyboxPipeline.Bind(buffer);
-        offset = 0;
-
-        auto vBuffer = m_SkyboxData.GetVertexBuffer().Buffer;
-        auto iBuffer = m_SkyboxData.GetIndexBuffer().Buffer;
-
-        vkCmdBindVertexBuffers(buffer, 0, 1, &vBuffer, &offset);
-        vkCmdBindIndexBuffer(buffer, iBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-        glm::mat4 cam = camera.GetProjectionMatrix() * glm::mat4(glm::mat3(camera.GetViewMatrix()));
-
-        m_SkyboxPipeline.PushConstantData(buffer, PipelineStage::Vertex, &cam[0], sizeof(glm::mat4), 0);
-        m_SkyboxPipeline.BindDescriptorSets(buffer, m_PerFrameData[index].SkyboxDescriptorSets.data(), (U32)m_PerFrameData[index].SkyboxDescriptorSets.size());
-
-        vkCmdDrawIndexed(buffer, m_SkyboxData.GetIndexCount(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(buffer, (U32)command.Mesh->IndexCount, 1, 0, 0, 0);
     }
 
     void Renderer::EndScene() {
@@ -170,6 +158,11 @@ namespace BRQ {
         }
     }
 
+    U32 Renderer::GetCurrentFrameIndex() const {
+
+        return m_RenderContext->GetCurrentIndex();
+    }
+
     void Renderer::InitInternal(const Window* window) {
 
         m_Window = window;
@@ -179,38 +172,18 @@ namespace BRQ {
         m_RenderContext = RenderContext::GetInstance();
 
         CreateFramebuffers();
-        CreateTexture();
-        CreateSkybox();
-        
-        CreateGraphicsPipeline();
-        CreateSkyboxPipeline();
-
-        CreateDescriptorPool();
-        CreateDescriptorSets();
         CreateCommands();
         CreateSynchronizationPrimitives();
-
-        m_MeshData.LoadMesh("Resources/Models/Lion.obj");
-
-        m_SkyboxData.Load();
     }
 
     void Renderer::DestroyInternal() {
 
         vkDeviceWaitIdle(m_RenderContext->GetDevice());
 
-        m_MeshData.DestroyMesh();
-        m_SkyboxData.DestroyMesh();
-
         DestroySynchronizationPrimitives();
         DestroyCommands();
-        DestroyGraphicsPipeline();
-        DestroySkyboxPipeline();
-        DestroyDescriptorPool();
-        DestroySkybox();
-        DestroyTexture();
         DestroyFramebuffers();
-        
+
         RenderContext::Destroy();
     }
 
@@ -252,43 +225,6 @@ namespace BRQ {
         }
 
         m_Framebuffers.clear();
-    }
-
-    void Renderer::CreateGraphicsPipeline() {
-
-        BufferLayout layout;
-        layout.PushElement(ElementType::Vec3, 3 * sizeof(float));
-        layout.PushElement(ElementType::Vec2, 2 * sizeof(float));
-
-        GraphicsPipelineCreateInfo info = {};
-        info.Layout = layout;
-        info.Flags = (GraphicsPipelineFlags)(EnableCulling | DepthWriteEnabled | DepthTestEnabled | DepthCompareLess);
-        info.Shaders = { { "Resources/Shaders/shader.vert.spv" }, { "Resources/Shaders/shader.frag.spv" } };
-
-        m_Pipeline.Init(info);
-    }
-
-    void Renderer::DestroyGraphicsPipeline() {
-
-        m_Pipeline.Destroy();
-    }
-
-    void Renderer::CreateSkyboxPipeline() {
-
-        BufferLayout layout;
-        layout.PushElement(ElementType::Vec3, 3 * sizeof(float));
-
-        GraphicsPipelineCreateInfo info = {};
-        info.Layout = layout;
-        info.Flags = (GraphicsPipelineFlags)(DepthTestEnabled | DepthCompareLess | DepthCompareEqual | CullModeFrontFace | EnableCulling);
-        info.Shaders = { { "Resources/Shaders/skyboxShader.vert.spv" }, { "Resources/Shaders/skyboxShader.frag.spv" } };
-
-        m_SkyboxPipeline.Init(info);
-    }
-
-    void Renderer::DestroySkyboxPipeline() {
-
-        m_SkyboxPipeline.Destroy();
     }
 
     void Renderer::CreateCommands() {
@@ -340,123 +276,5 @@ namespace BRQ {
             VK::DestroySemaphore(m_RenderContext->GetDevice(), m_PerFrameData[i].RenderFinishedSemaphore);
             VK::DestroyFence(m_RenderContext->GetDevice(), m_PerFrameData[i].CommandBufferExecutedFence);
         }
-    }
-
-    void Renderer::CreateDescriptorPool() {
-
-        VkDescriptorPoolSize size = {};
-        size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        size.descriptorCount = 1;
-
-        VK::DescriptorPoolCreateInfo info = {};
-        info.MaxSets = 4;
-        info.PoolSizeCount = 1;
-        info.PoolSizes = &size;
-
-        for (U64 i = 0; i < FRAME_LAG; i++) {
-
-            m_PerFrameData[i].SkyboxDescriptorPool = VK::CreateDescriptorPool(m_RenderContext->GetDevice(), info);
-            m_PerFrameData[i].DescriptorPool = VK::CreateDescriptorPool(m_RenderContext->GetDevice(), info);
-        }
-    }
-
-    void Renderer::DestroyDescriptorPool() {
-
-        for (U64 i = 0; i < FRAME_LAG; i++) {
-
-            VK::DestroyDescriptorPool(m_RenderContext->GetDevice(), m_PerFrameData[i].DescriptorPool);
-            VK::DestroyDescriptorPool(m_RenderContext->GetDevice(), m_PerFrameData[i].SkyboxDescriptorPool);
-        }
-    }
-
-    void Renderer::CreateDescriptorSets() {
-
-        std::vector<VkDescriptorSetLayout> layouts = m_Pipeline.GetDescriptorSetLayouts();
-        std::vector<VkDescriptorSetLayout> skyboxLayouts =  m_SkyboxPipeline.GetDescriptorSetLayouts();
-
-        for (U64 i = 0; i < FRAME_LAG; i++) {
-
-            VK::DescriptorSetAllocateInfo info = {};
-            info.DescriptorPool = m_PerFrameData[i].DescriptorPool;
-            info.DescriptorSetCount = (U32)layouts.size();
-            info.SetLayouts = layouts.data();
-
-            m_PerFrameData[i].DescriptorSets = std::move(VK::AllocateDescriptorSets(m_RenderContext->GetDevice(), info));
-
-            info.DescriptorPool = m_PerFrameData[i].SkyboxDescriptorPool;
-            info.DescriptorSetCount = (U32)skyboxLayouts.size();
-            info.SetLayouts = skyboxLayouts.data();
-
-            m_PerFrameData[i].SkyboxDescriptorSets = std::move(VK::AllocateDescriptorSets(m_RenderContext->GetDevice(), info));
-
-            for (U64 j = 0; j < m_PerFrameData[i].DescriptorSets.size(); j++) {
-
-                VkDescriptorImageInfo imageInfo = {};
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = m_Texture2D->GetImageView();
-                imageInfo.sampler = m_Texture2D->GetSampler();
-
-                VkWriteDescriptorSet descriptorWrites = {};
-
-                descriptorWrites.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites.dstSet = m_PerFrameData[i].DescriptorSets[j];
-                descriptorWrites.dstBinding = 0;
-                descriptorWrites.dstArrayElement = 0;
-                descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                descriptorWrites.descriptorCount = 1;
-                descriptorWrites.pImageInfo = &imageInfo;
-
-                vkUpdateDescriptorSets(m_RenderContext->GetDevice(), 1, &descriptorWrites, 0, nullptr);
-            }
-
-            for (size_t k = 0; k < m_PerFrameData[i].SkyboxDescriptorSets.size(); k++) {
-
-                VkDescriptorImageInfo imageInfo = {};
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = m_TextureCube->GetImageView();
-                imageInfo.sampler = m_TextureCube->GetSampler();
-
-                VkWriteDescriptorSet descriptorWrites = {};
-
-                descriptorWrites.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites.dstSet = m_PerFrameData[i].SkyboxDescriptorSets[k];
-                descriptorWrites.dstBinding = 0;
-                descriptorWrites.dstArrayElement = 0;
-                descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                descriptorWrites.descriptorCount = 1;
-                descriptorWrites.pImageInfo = &imageInfo;
-
-                vkUpdateDescriptorSets(m_RenderContext->GetDevice(), 1, &descriptorWrites, 0, nullptr);
-            }
-        }
-    }
-
-    void Renderer::CreateTexture() {
-
-        m_Texture2D = new Texture2D("Resources/Textures/Lion.jpg");
-    }
-
-    void Renderer::DestroyTexture() {
-
-        delete m_Texture2D;
-    }
-
-    void Renderer::CreateSkybox() {
-
-        std::vector<std::string_view> filenames = {
-            "Resources/Textures/Skybox/posz.jpg",
-            "Resources/Textures/Skybox/negz.jpg",
-            "Resources/Textures/Skybox/negy.jpg",
-            "Resources/Textures/Skybox/posy.jpg",
-            "Resources/Textures/Skybox/posx.jpg",
-            "Resources/Textures/Skybox/negx.jpg",
-        };
-
-        m_TextureCube = new TextureCube(filenames);
-    }
-
-    void Renderer::DestroySkybox() {
-
-        delete m_TextureCube;
     }
 }

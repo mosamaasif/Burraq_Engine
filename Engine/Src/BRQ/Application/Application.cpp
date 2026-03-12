@@ -90,17 +90,6 @@ namespace BRQ {
 
             m_CameraController.Reset();
         }
-
-        if (!m_Minimized) {
-
-            m_Renderer->BeginScene(m_CameraController.GetCamera());
-
-            // draw here
-
-            m_Renderer->EndScene();
-
-            m_Renderer->Present();
-        }
     }
     
     bool Application::OnWindowResize(WindowResizeEvent& event) {

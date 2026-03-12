@@ -18,6 +18,8 @@ namespace BRQ {
         void Load();
         void DestroyMesh();
 
+        const Mesh& GetMesh() const { return m_SkyboxMesh; }
+
         VK::Buffer GetVertexBuffer() const { return m_SkyboxMesh.VertexBuffer; }
         VK::Buffer GetIndexBuffer() const { return m_SkyboxMesh.IndexBuffer; }
 

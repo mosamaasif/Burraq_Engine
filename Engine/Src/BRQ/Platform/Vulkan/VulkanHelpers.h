@@ -233,6 +233,7 @@ namespace BRQ { namespace VK {
         U32                                          Subpass = 0;
         VkPipeline                                   BasePipelineHandle = VK_NULL_HANDLE;
         U32                                          BasePipelineIndex = 0;
+        VkPipelineCache                              PipelineCache = VK_NULL_HANDLE;
     };
 
     BRQ_ALIGN(16) struct SemaphoreCreateInfo {

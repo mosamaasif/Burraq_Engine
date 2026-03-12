@@ -23,6 +23,7 @@ namespace BRQ {
         VK::ImageView         m_DepthImageView;
 
         VkRenderPass          m_RenderPass;
+        VkPipelineCache       m_PipelineCache;
 
     protected:
         RenderContext();
@@ -66,6 +67,7 @@ namespace BRQ {
         U32 GetImageCount() const { return m_Device.GetSurfaceImageCount(); }
 
         const VkRenderPass& GetRenderPass() const { return m_RenderPass; }
+        VkPipelineCache GetPipelineCache() const { return m_PipelineCache; }
 
         void UpdateSwapchain();
 
@@ -87,5 +89,8 @@ namespace BRQ {
 
         void CreateRenderPass();
         void DestroyRenderPass();
+
+        void CreatePipelineCache();
+        void DestroyPipelineCache();
     };
 }

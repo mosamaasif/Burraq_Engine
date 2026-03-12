@@ -85,17 +85,17 @@ namespace BRQ {
         VK::DestroyGraphicsPipeline(context->GetDevice(), m_Pipeline);
     }
 
-    void GraphicsPipeline::Bind(const VkCommandBuffer& commandBuffer) {
+    void GraphicsPipeline::Bind(const VkCommandBuffer& commandBuffer) const {
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
     }
 
-    void GraphicsPipeline::BindDescriptorSets(const VkCommandBuffer& commandBuffer, const VkDescriptorSet* sets, U32 size) {
+    void GraphicsPipeline::BindDescriptorSets(const VkCommandBuffer& commandBuffer, const VkDescriptorSet* sets, U32 size) const {
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 0, size, sets, 0, nullptr);
     }
 
-    void GraphicsPipeline::PushConstantData(const VkCommandBuffer& commandBuffer, PipelineStage stage, const void* data, U32 size, U32 offset) {
+    void GraphicsPipeline::PushConstantData(const VkCommandBuffer& commandBuffer, PipelineStage stage, const void* data, U32 size, U32 offset) const {
 
         vkCmdPushConstants(commandBuffer, m_Layout, (VkShaderStageFlags)stage, offset, size, data);
     }
@@ -405,6 +405,7 @@ namespace BRQ {
         pipelineInfo.DynamicState = dynamicStateInfo;
         pipelineInfo.Layout = m_Layout;
         pipelineInfo.RenderPass = context->GetRenderPass();
+        pipelineInfo.PipelineCache = context->GetPipelineCache();
 
         m_Pipeline = VK::CreateGraphicsPipeline(context->GetDevice(), pipelineInfo);
     }

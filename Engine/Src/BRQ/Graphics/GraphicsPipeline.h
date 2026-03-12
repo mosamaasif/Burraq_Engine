@@ -53,10 +53,10 @@ namespace BRQ {
         void Init(const GraphicsPipelineCreateInfo& info);
         void Destroy();
 
-        void Bind(const VkCommandBuffer& commandBuffer);
-        void BindDescriptorSets(const VkCommandBuffer& commandBuffer, const VkDescriptorSet* sets, U32 size);
+        void Bind(const VkCommandBuffer& commandBuffer) const;
+        void BindDescriptorSets(const VkCommandBuffer& commandBuffer, const VkDescriptorSet* sets, U32 size) const;
         const std::vector<VkDescriptorSetLayout>& GetDescriptorSetLayouts() const { return m_DescriptorSetLayouts; }
-        void PushConstantData(const VkCommandBuffer& commandBuffer, PipelineStage stage, const void* data, U32 size, U32 offset);
+        void PushConstantData(const VkCommandBuffer& commandBuffer, PipelineStage stage, const void* data, U32 size, U32 offset) const;
 
     private:
 

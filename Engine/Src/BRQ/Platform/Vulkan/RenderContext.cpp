@@ -4,6 +4,7 @@
 #include "VulkanCommon.h"
 
 #include "Application/Window.h"
+#include "Utilities/FileSystem.h"
 
 namespace BRQ {
 
@@ -16,6 +17,7 @@ namespace BRQ {
         m_DepthImage = {};
         m_DepthImageView = {};
         m_RenderPass = VK_NULL_HANDLE;
+        m_PipelineCache = VK_NULL_HANDLE;
     }
 
     void RenderContext::Init(const Window* window) {
@@ -48,10 +50,12 @@ namespace BRQ {
         CreateDepthResources();
 
         CreateRenderPass();
+        CreatePipelineCache();
     }
 
     void RenderContext::DestroyInternal() {
 
+        DestroyPipelineCache();
         DestroyRenderPass();
 
         DestroyDepthResources();
@@ -206,5 +210,51 @@ namespace BRQ {
     void RenderContext::DestroyRenderPass() {
 
         VK::DestroyRenderPass(m_Device.GetDevice(), m_RenderPass);
+    }
+
+    void RenderContext::CreatePipelineCache() {
+
+        using namespace Utilities;
+
+        FileSystem* fs = FileSystem::GetInstance();
+
+        VkPipelineCacheCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+        std::vector<BYTE> cacheData = fs->ReadFile("pipeline_cache.bin", FileSystem::InputMode::ReadBinary);
+
+        if (!cacheData.empty()) {
+
+            createInfo.initialDataSize = cacheData.size();
+            createInfo.pInitialData = cacheData.data();
+            BRQ_CORE_INFO("Loaded pipeline cache from disk ({} bytes)", cacheData.size());
+        }
+
+        VK_CHECK(vkCreatePipelineCache(m_Device.GetDevice(), &createInfo, nullptr, &m_PipelineCache));
+    }
+
+    void RenderContext::DestroyPipelineCache() {
+
+        using namespace Utilities;
+
+        if (m_PipelineCache != VK_NULL_HANDLE) {
+
+            size_t dataSize = 0;
+            VK_CHECK(vkGetPipelineCacheData(m_Device.GetDevice(), m_PipelineCache, &dataSize, nullptr));
+
+            if (dataSize > 0) {
+
+                std::vector<BYTE> cacheData(dataSize);
+                VK_CHECK(vkGetPipelineCacheData(m_Device.GetDevice(), m_PipelineCache, &dataSize, cacheData.data()));
+
+                FileSystem* fs = FileSystem::GetInstance();
+                fs->WriteFile("pipeline_cache.bin", FileSystem::InputMode::WriteBinary, cacheData);
+
+                BRQ_CORE_INFO("Saved pipeline cache to disk ({} bytes)", dataSize);
+            }
+
+            vkDestroyPipelineCache(m_Device.GetDevice(), m_PipelineCache, nullptr);
+            m_PipelineCache = VK_NULL_HANDLE;
+        }
     }
 }
