@@ -1,10 +1,8 @@
 #include <BRQ.h>
 #include "Texture2D.h"
 
-#pragma warning(disable: 6011 26819 6308 28182 6262)  
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#pragma warning(default: 6011 26819 6308 28182 6262)  
 
 #include "Platform/Vulkan/RenderContext.h"
 

@@ -2,9 +2,7 @@
 #include "TextureCube.h"
 #include "Platform/Vulkan/RenderContext.h"
 
-#pragma warning(disable: 6011 26819 6308 28182 6262)  
 #include <stb_image.h>
-#pragma warning(default: 6011 26819 6308 28182 6262)  
 
 namespace BRQ {
 
